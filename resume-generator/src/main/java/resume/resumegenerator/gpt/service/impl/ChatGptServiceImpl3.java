@@ -1,6 +1,5 @@
 package resume.resumegenerator.gpt.service.impl;
 
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -17,6 +16,7 @@ import resume.resumegenerator.gpt.dto.CompletionDto;
 import resume.resumegenerator.gpt.service.ChatGptService;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -41,10 +41,11 @@ public class ChatGptServiceImpl3 implements ChatGptService {
 
         String input = completionDto.getPrompt();
 
-        String additionalPrompt = "이라는 단어를 사용해서 이력서에 쓸 자기소개글을 4줄 작성해줘";
+        String additionalPrompt = "이라는 표현에서 핵심표현을 사용해서 이력서에 쓸 자기소개글을 한글로 총 300자로 작성해줘";
         log.info("질문: {}", input + additionalPrompt);
 
         completionDto.setModel("gpt-3.5-turbo-instruct"); // gpt 모델 이름
+        completionDto.setMaxTokens(800); // 최대 토큰 설정
 
         // 입력받은 단어 + 추가 문구를 합쳐서 새로운 질문 생성
         completionDto.setPrompt(input + " " + additionalPrompt);
@@ -63,8 +64,16 @@ public class ChatGptServiceImpl3 implements ChatGptService {
         try {
             ObjectMapper om = new ObjectMapper();
             // String -> HashMap 역직렬화 구성
-            resultMap = om.readValue(response.getBody(), new TypeReference<>() {
+            resultMap = om.readValue(response.getBody().trim(), new TypeReference<>() {
             });
+
+            // 모든 선택지의 텍스트를 결합하여 전체 텍스트로 구성
+            List<Map<String, Object>> choices = (List<Map<String, Object>>) resultMap.get("choices");
+            StringBuilder completeText = new StringBuilder();
+            for (Map<String, Object> choice : choices) {
+                completeText.append(choice.get("text").toString().trim());
+            }
+            resultMap.put("complete_text", completeText.toString());
         } catch (JsonMappingException e) {
             log.debug("JsonMappingException :: " + e.getMessage());
         } catch (JsonProcessingException e) {
@@ -76,5 +85,3 @@ public class ChatGptServiceImpl3 implements ChatGptService {
         return resultMap;
     }
 }
-
-

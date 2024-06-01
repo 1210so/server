@@ -16,7 +16,6 @@ import java.util.Map;
 /**
  * 전체 이력서 정보를 통합하여 조회
  */
-
 @RestController
 @RequestMapping("/resume")
 public class ResumeController {
@@ -26,14 +25,18 @@ public class ResumeController {
     private final CareerInfoStore careerInfoStore;
     private final LicenseInfoStore licenseInfoStore;
     private final TrainingInfoStore trainingInfoStore;
+    private final IntroductionInfoStore introductionInfoStore;
 
     @Autowired
-    public ResumeController(PersonalInfoStore personalInfoStore, AcademicInfoStore academicInfoStore, CareerInfoStore careerInfoStore, LicenseInfoStore licenseInfoStore, TrainingInfoStore trainingInfoStore) {
+    public ResumeController(PersonalInfoStore personalInfoStore, AcademicInfoStore academicInfoStore,
+                            CareerInfoStore careerInfoStore, LicenseInfoStore licenseInfoStore,
+                            TrainingInfoStore trainingInfoStore, IntroductionInfoStore introductionInfoStore) {
         this.personalInfoStore = personalInfoStore;
         this.academicInfoStore = academicInfoStore;
         this.careerInfoStore = careerInfoStore;
         this.licenseInfoStore = licenseInfoStore;
         this.trainingInfoStore = trainingInfoStore;
+        this.introductionInfoStore = introductionInfoStore;
     }
 
     @GetMapping("/{userId}")
@@ -44,6 +47,7 @@ public class ResumeController {
         List<CareerInfo> careerInfos = careerInfoStore.findById(userId);
         List<LicenseInfo> licenseInfos = licenseInfoStore.findById(userId);
         List<TrainingInfo> trainingInfos = trainingInfoStore.findById(userId);
+        IntroductionInfo introductionInfo = introductionInfoStore.findById(userId);
 
         if (personalInfo != null) {
             resume.put("PersonalInfo", personalInfo);
@@ -59,6 +63,9 @@ public class ResumeController {
         }
         if (trainingInfos != null) {
             resume.put("TrainingInfos", trainingInfos);
+        }
+        if (introductionInfo != null) {
+            resume.put("IntroductionInfo", introductionInfo);
         }
         if (resume.isEmpty()) {
             return ResponseEntity.notFound().build();

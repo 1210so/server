@@ -39,4 +39,9 @@ public class CompletionDto {
     public void setModel(String model) {
         this.model = model;
     }
+
+    // 최대 토큰 설정 메서드
+    public void setMaxTokens(int max_tokens) {
+        this.max_tokens = max_tokens;
+    }
 }
