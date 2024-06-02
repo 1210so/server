@@ -41,14 +41,18 @@ public class ChatGptServiceImpl3 implements ChatGptService {
 
         String input = completionDto.getPrompt();
 
-        String additionalPrompt = "이라는 표현에서 핵심표현을 사용해서 이력서에 쓸 자기소개글을 한글로 총 300자로 작성해줘";
-        log.info("질문: {}", input + additionalPrompt);
+        // 선택된 항목들을 포맷에 맞춰 구성
+        StringBuilder formattedInput = new StringBuilder();
+        formattedInput.append("당신은 해당 생년월일의 구직자입니다. 아래의 제약조건을 지켜서 출력형식에 따라 300자 이내의 이력서 자기소개서를 한글로 작성해주세요.\n");
+        formattedInput.append("#제약 조건 : \n- 선택한 항목의 핵심 표현을 사용해야 한다.\n- 문장은 공식적이고 명확하게 작성한다\n - 이름, 생년월일을 자기소개서에 작성하면 안된다.\n");
+        formattedInput.append("#출력 형식 : 저는 항상 책임감을 가지고 살아온 사람입니다. 오랜 시간 동안 다양한 직무를 맡아 왔으며, 맡은 바 책임을 다해 완수해 왔습니다. 또한, 친화력이 뛰어나 여러 세대와 원활하게 소통하며, 다양한 사람들과의 협업을 통해 좋은 결과를 만들어냈습니다.");
+        formattedInput.append("#선택한 항목: " + input + "\n");
+
+        log.info("질문: {}", formattedInput.toString());
 
         completionDto.setModel("gpt-3.5-turbo-instruct"); // gpt 모델 이름
         completionDto.setMaxTokens(800); // 최대 토큰 설정
-
-        // 입력받은 단어 + 추가 문구를 합쳐서 새로운 질문 생성
-        completionDto.setPrompt(input + " " + additionalPrompt);
+        completionDto.setPrompt(formattedInput.toString());
 
         // 토큰 정보가 포함된 Header를 가져온다.
         HttpHeaders headers = chatGptConfig.httpHeaders();
@@ -64,9 +68,7 @@ public class ChatGptServiceImpl3 implements ChatGptService {
         try {
             ObjectMapper om = new ObjectMapper();
             // String -> HashMap 역직렬화 구성
-            resultMap = om.readValue(response.getBody().trim(), new TypeReference<>() {
-            });
-
+            resultMap = om.readValue(response.getBody().trim(), new TypeReference<>() {});
             // 모든 선택지의 텍스트를 결합하여 전체 텍스트로 구성
             List<Map<String, Object>> choices = (List<Map<String, Object>>) resultMap.get("choices");
             StringBuilder completeText = new StringBuilder();

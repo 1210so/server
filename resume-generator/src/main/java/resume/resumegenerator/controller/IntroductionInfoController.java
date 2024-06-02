@@ -5,11 +5,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import resume.resumegenerator.domain.entity.IntroductionInfo;
+import resume.resumegenerator.domain.entity.PersonalInfo;
 import resume.resumegenerator.gpt.dto.CompletionDto;
 import resume.resumegenerator.gpt.service.ChatGptService;
 import resume.resumegenerator.store.IntroductionInfoStore;
+import resume.resumegenerator.store.PersonalInfoStore;
 
-import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -18,11 +19,13 @@ public class IntroductionInfoController {
 
     private final IntroductionInfoStore introductionInfoStore;
     private final ChatGptService chatGptService;
+    private final PersonalInfoStore personalInfoStore;
 
     @Autowired
-    public IntroductionInfoController(IntroductionInfoStore introductionInfoStore, ChatGptService chatGptService) {
+    public IntroductionInfoController(IntroductionInfoStore introductionInfoStore, ChatGptService chatGptService, PersonalInfoStore personalInfoStore) {
         this.introductionInfoStore = introductionInfoStore;
         this.chatGptService = chatGptService;
+        this.personalInfoStore = personalInfoStore;
     }
 
     @PostMapping("/save/{userId}")
@@ -32,22 +35,31 @@ public class IntroductionInfoController {
             return ResponseEntity.badRequest().body(null);
         }
 
+        // 사용자 정보 가져오기
+        PersonalInfo personalInfo = personalInfoStore.findById(userId);
+        if (personalInfo == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
+
+        String birth = personalInfo.getBirth();
+
         // GPT 프롬프트 생성
         CompletionDto completionDto = CompletionDto.builder()
                 .model("gpt-3.5-turbo-instruct")
                 .prompt(prompt)
                 .temperature(0.7f)
-                .max_tokens(150)
+                .max_tokens(800)
                 .build();
+
+        // 생년월일을 포함한 프롬프트 구성
+        String fullPrompt = String.format("%s\n\n사용자의 생년월일: %s", completionDto.getPrompt(), birth);
+        completionDto.setPrompt(fullPrompt);
 
         Map<String, Object> gptResponse = chatGptService.prompt(completionDto);
         String generatedText = null;
 
-        if (gptResponse.containsKey("choices")) {
-            List<Map<String, Object>> choices = (List<Map<String, Object>>) gptResponse.get("choices");
-            if (!choices.isEmpty() && choices.get(0).containsKey("text")) {
-                generatedText = (String) choices.get(0).get("text");
-            }
+        if (gptResponse.containsKey("complete_text")) {
+            generatedText = (String) gptResponse.get("complete_text");
         }
 
         if (generatedText == null) {
@@ -87,6 +99,4 @@ public class IntroductionInfoController {
         return ResponseEntity.ok(introductionInfo);
     }
 }
-
-
 
