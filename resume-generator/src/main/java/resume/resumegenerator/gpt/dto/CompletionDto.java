@@ -2,6 +2,9 @@ package resume.resumegenerator.gpt.dto;
 
 import lombok.*;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  * ChatGpt 프롬프트 요청 DTO
  */
@@ -10,38 +13,31 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class CompletionDto {
 
-    // 사용할 모델
     private String model;
-
-    // 사용할 프롬프트 명령어
-    private String prompt;
-
-    // 프롬프트의 다양성을 조절할 명령어(default : 1)
-    private float temperature = 0;
-
-    // 최대 사용할 토큰 (default : 1000)
+    private List<Map<String, String>> messages;
+    private float temperature = 0.7F;
     private int max_tokens = 1000;
 
     @Builder
-    public CompletionDto(String model, String prompt, float temperature, int max_tokens) {
+    public CompletionDto(String model, List<Map<String, String>> messages,
+                         float temperature, int max_tokens) {
         this.model = model;
-        this.prompt = prompt;
+        this.messages = messages;
         this.temperature = temperature;
         this.max_tokens = max_tokens;
     }
 
-    // 프롬프트 설정 메서드
-    public void setPrompt(String prompt) {
-        this.prompt = prompt;
+    public List<Map<String, String>> getMessages() {
+        return messages;
     }
 
-    // ChatGpt 모델 설정 메서드
-    public void setModel(String model) {
-        this.model = model;
+    public float getTemperature() {
+        return temperature;
     }
 
-    // 최대 토큰 설정 메서드
-    public void setMaxTokens(int max_tokens) {
-        this.max_tokens = max_tokens;
+    public int getMaxTokens() {
+        return max_tokens;
     }
 }
+
+
