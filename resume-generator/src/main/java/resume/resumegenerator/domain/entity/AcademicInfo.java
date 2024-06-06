@@ -2,13 +2,23 @@ package resume.resumegenerator.domain.entity;
 
 /**
  * 2. 학력
- * id, highestEdu(최종 학력), schoolName(학교명), major(전공 계열), detailedMajor(세부 전공)
+ * id, highestEdu(최종 학력), schoolName(학교명), major(전공 계열), detailedMajor(세부 전공), graduationDate(졸업연도)
  */
 public class AcademicInfo extends BaseEntity{
     private String highestEdu;
     private String schoolName;
     private String major;
     private String detailedMajor;
+
+    private String graduationDate;
+
+    public String getGraduationDate() {
+        return graduationDate;
+    }
+
+    public void setGraduationDate(String graduationDate) {
+        this.graduationDate = graduationDate;
+    }
 
     public AcademicInfo() {
     }
