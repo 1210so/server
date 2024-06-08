@@ -118,11 +118,13 @@ public class ResumeController {
 
             // GitHub 업로드
             String fileName = "resume_" + userId + "_" + System.currentTimeMillis() + ".html";
+            String fileUrl = "https://1210so.github.io/resumeMobileHTML/" + fileName;
             gitHubService.uploadFileToGitHub(fileName, htmlContent);
 
-            return ResponseEntity.ok("File uploaded successfully: " + fileName);
+            return ResponseEntity.ok(fileUrl);
         } catch (IOException | InterruptedException e) {
             return ResponseEntity.status(500).body("File upload failed: " + e.getMessage());
         }
     }
 }
+

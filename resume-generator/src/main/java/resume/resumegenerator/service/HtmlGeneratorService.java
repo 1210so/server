@@ -15,183 +15,238 @@ public class HtmlGeneratorService {
                 .append("<html lang=\"ko\">\n")
                 .append("<head>\n")
                 .append("    <meta charset=\"UTF-8\">\n")
-                .append("    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n")
-                .append("    <title>12쉽소 이력서 출력</title>\n")
-                .append("    <style>@import url(12style.css);</style>\n")
+                .append("    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, maximum-scale=1.0\">\n")
+                .append("    <title>12쉽소 이력서 출력 A4</title>\n")
+                .append("    <link rel=\"stylesheet\" href=\"12style_A4.css\">\n")
                 .append("</head>\n")
-                .append("<body>\n");
+                .append("<body>\n")
+                .append("    <button id=\"topdfButton\" onclick=\"downloadPDF()\" data-html2canvas-ignore=\"true\">PDF로 다운로드</button>\n");
+
+        // 페이지 1 시작
+        html.append("    <section class=\"page\">\n")
+                .append("        <div id=\"topBackground\"><p id=\"logo\">12쉽소</p></div>\n")
+                .append("        <table class=\"topTable\">\n")
+                .append("            <tr>\n")
+                .append("                <td class=\"leftColumn\">\n")
+                .append("                    <div style=\"width:120px; height:160px; background-color:black;\"> . </div>\n")
+                .append("                </td>\n")
+                .append("                <td class=\"centerColumn\">\n")
+                .append("                    <div class=\"topHighlightTextSmall\">언제나 웃는 얼굴로!</div>\n")
+                .append("                    <div class=\"topHighlightTextLarge\">");
 
         // 인적사항
         PersonalInfo personalInfo = (PersonalInfo) resumeData.get("PersonalInfo");
         if (personalInfo != null) {
-            html.append("    <div class=\"top\">\n")
-                    .append("        <p class=\"logo\">12쉽소</p>\n")
-                    .append("        <table class=\"topTable\">\n")
-                    .append("            <tr>\n")
-                    .append("                <td class=\"leftColumn\">\n")
-                    .append("                    <p class=\"topHighlightText\" style=\"font-size:20px\">언제나 웃는 얼굴로!</p>\n")
-                    .append("                    <p class=\"topHighlightText\" style=\"font-size:72px\">").append(personalInfo.getName()).append("</p>\n")
-                    .append("                </td>\n")
-                    .append("                <td class=\"rightColumn\"><img src=\"SampleImage.jpeg\" style=\"width:120px; height:160px\"></td>\n")
-                    .append("            </tr>\n")
-                    .append("        </table>\n")
-                    .append("    </div>\n");
+            html.append(personalInfo.getName());
         }
+
+        html.append("</div>\n")
+                .append("                </td>\n")
+                .append("                <td class=\"rightColumn\">\n");
+
+        // 성격 특징을 한 줄에 하나씩
+        IntroductionInfo introductionInfo = (IntroductionInfo) resumeData.get("IntroductionInfo");
+        if (introductionInfo != null) {
+            appendPersonality(html, introductionInfo.getPersonality1());
+            appendPersonality(html, introductionInfo.getPersonality2());
+            appendPersonality(html, introductionInfo.getPersonality3());
+        }
+
+        html.append("                </td>\n")
+                .append("            </tr>\n")
+                .append("        </table>\n")
+                .append("        <div class=\"infoBox\"><div class=\"infoLine\" style=\"border-top: 4px solid #001ED6;\"></div></div>\n")
+                .append("        <div class=\"infoBox\">\n")
+                .append("            <table class=\"infoTable\">\n")
+                .append("                <tr>\n")
+                .append("                    <td class=\"leftInfoSide\">인적사항</td>\n")
+                .append("                    <td class=\"rightInfoSide\">\n")
+                .append("                        <table class=\"infoTable\">\n");
 
         // 인적사항 상세
         if (personalInfo != null) {
-            html.append("    <div class=\"infoBox\">\n")
-                    .append("        <div class=\"infoTitleContainer\"><span class=\"infoTitle\">인적사항</span><div class=\"infoLine\"></div></div><br>\n")
-                    .append("        <table class=\"infoTable\">\n");
-
-            appendInfoRow(html, "생년월일", personalInfo.getBirth());
-            appendInfoRow(html, "주소", personalInfo.getAddress());
-            appendInfoRow(html, "연락처", personalInfo.getContact());
-            appendInfoRow(html, "이메일", personalInfo.getEmail());
-
-            html.append("        </table>\n")
-                    .append("    </div>\n");
+            appendDetailedInfo(html, "이름", personalInfo.getName());
+            appendDetailedInfo(html, "주소", personalInfo.getAddress());
+            appendDetailedInfo(html, "연락처", personalInfo.getContact());
+            appendDetailedInfo(html, "이메일", personalInfo.getEmail());
         }
 
-        // 자기소개 - 성격 특징
-        IntroductionInfo introductionInfo = (IntroductionInfo) resumeData.get("IntroductionInfo");
-        if (introductionInfo != null && personalInfo != null) {
-            html.append("    <div class=\"infoBox\">\n")
-                    .append("        <div class=\"infoTitleContainer\"><span class=\"infoTitle\">저, ").append(personalInfo.getName()).append("은</span><div class=\"infoLine\"></div></div><br>\n")
-                    .append("        <table class=\"infoTable\">\n");
-
-            appendInfoRowCenter(html, introductionInfo.getPersonality1());
-            appendInfoRowCenter(html, introductionInfo.getPersonality2());
-            appendInfoRowCenter(html, introductionInfo.getPersonality3());
-
-            html.append("        </table>\n")
-                    .append("    </div>\n");
-        }
+        html.append("                        </table>\n")
+                .append("                    </td>\n")
+                .append("                </tr>\n")
+                .append("            </table>\n")
+                .append("        </div>\n");
 
         // 최종학력사항
         AcademicInfo academicInfo = (AcademicInfo) resumeData.get("AcademicInfo");
         if (academicInfo != null) {
-            html.append("    <div class=\"infoBox\">\n")
-                    .append("        <div class=\"infoTitleContainer\"><span class=\"infoTitle\">최종학력사항</span><div class=\"infoLine\"></div></div><br>\n")
-                    .append("        <table class=\"infoTable\">\n");
+            html.append("        <div class=\"infoBox\">\n")
+                    .append("            <table class=\"infoTable\">\n")
+                    .append("                <tr>\n")
+                    .append("                    <td class=\"leftInfoSide\">최종<br>학력사항</td>\n")
+                    .append("                    <td class=\"rightInfoSide\">\n")
+                    .append("                        <table class=\"infoTable\">\n");
 
-            appendInfoRow(html, "학교명", academicInfo.getSchoolName());
-            appendInfoRow(html, "전공", academicInfo.getDetailedMajor());
-            appendInfoRow(html, "졸업연도", academicInfo.getGraduationDate());
+            appendDetailedInfo(html, "학교명", academicInfo.getSchoolName());
+            appendDetailedInfo(html, "전공", academicInfo.getDetailedMajor());
+            appendDetailedInfo(html, "졸업연도", academicInfo.getGraduationDate());
 
-            html.append("        </table>\n")
-                    .append("    </div>\n");
+            html.append("                        </table>\n")
+                    .append("                    </td>\n")
+                    .append("                </tr>\n")
+                    .append("            </table>\n")
+                    .append("        </div>\n");
         }
 
         // 자격증
         List<LicenseInfo> licenseInfos = (List<LicenseInfo>) resumeData.get("LicenseInfos");
         if (licenseInfos != null && !licenseInfos.isEmpty()) {
-            html.append("    <div class=\"infoBox\">\n")
-                    .append("        <div class=\"infoTitleContainer\"><span class=\"infoTitle\">자격증</span><div class=\"infoLine\"></div></div><br>\n")
-                    .append("        <table class=\"infoTable\">\n");
+            html.append("        <div class=\"infoBox\">\n")
+                    .append("            <table class=\"infoTable\">\n")
+                    .append("                <tr>\n")
+                    .append("                    <td class=\"leftInfoSide\">자격증</td>\n")
+                    .append("                    <td class=\"rightInfoSide\">\n")
+                    .append("                        <table class=\"infoTable\">\n");
 
             for (LicenseInfo licenseInfo : licenseInfos) {
-                html.append("            <tr>\n")
-                        .append("                <td class=\"infoLeft\"><div class=\"roundBox\"><p class=\"infoText\">자격증명</p></div></td>\n")
-                        .append("                <td class=\"infoRight\"><p class=\"infoText\">").append(licenseInfo.getLicenseName()).append("</p></td>\n")
-                        .append("            </tr>\n")
-                        .append("            <tr>\n")
-                        .append("                <td class=\"infoLeft\"><div class=\"roundBox\"><p class=\"infoText\">취득일</p></div></td>\n")
-                        .append("                <td class=\"infoRight\"><p class=\"infoText\">").append(licenseInfo.getDate()).append("</p></td>\n")
-                        .append("            </tr>\n")
-                        .append("            <tr>\n")
-                        .append("                <td class=\"infoLeft\"><div class=\"roundBox\"><p class=\"infoText\">발급기관</p></div></td>\n")
-                        .append("                <td class=\"infoRight\"><p class=\"infoText\">").append(licenseInfo.getAgency()).append("</p></td>\n")
-                        .append("            </tr>\n")
-                        .append("            <tr><td colspan=\"2\"><div class=\"infoLineSub\"></div><br></td></tr>\n");
+                appendDetailedInfo(html, "자격증명", licenseInfo.getLicenseName());
+                appendDetailedInfo(html, "취득일", licenseInfo.getDate());
+                appendDetailedInfo(html, "발급기관", licenseInfo.getAgency());
+                html.append("                            <tr><td style=\"padding-top:5px; padding-bottom:5px;\" colspan=\"2\"><div class=\"infoLineSub\"></div></td></tr>\n");
             }
 
-            html.append("        </table>\n")
-                    .append("    </div>\n");
+            html.append("                        </table>\n")
+                    .append("                    </td>\n")
+                    .append("                </tr>\n")
+                    .append("            </table>\n")
+                    .append("        </div>\n");
         }
+
+        html.append("    </section>\n");
+
+        // 페이지 2 시작
+        html.append("    <section class=\"page\">\n")
+                .append("        <div id=\"topBackground2p\"><p id=\"logo\">12쉽소</p></div>\n")
+                .append("        <br><br><br><br>\n");
+
 
         // 경력사항
         List<CareerInfo> careerInfos = (List<CareerInfo>) resumeData.get("CareerInfos");
         if (careerInfos != null && !careerInfos.isEmpty()) {
-            html.append("    <div class=\"infoBox\">\n")
-                    .append("        <div class=\"infoTitleContainer\"><span class=\"infoTitle\">경력사항</span><div class=\"infoLine\"></div></div><br>\n");
+            html.append("        <div class=\"infoBox\">\n")
+                    .append("            <table class=\"infoTable\">\n")
+                    .append("                <tr>\n")
+                    .append("                    <td class=\"leftInfoSide\">경력사항</td>\n")
+                    .append("                    <td class=\"rightInfoSide\">\n")
+                    .append("                        <table>\n");
 
             for (CareerInfo careerInfo : careerInfos) {
-                html.append("        <p class=\"career\"><span class=\"roundBoxinText\">").append(careerInfo.getPlace()).append("</span>에서 ")
-                        .append("<span class=\"roundBoxinText\">").append(careerInfo.getPeriod()).append("</span>동안 ")
-                        .append("<span class=\"roundBoxinText\">").append(careerInfo.getTask()).append("</span> 업무를 맡았어요.</p><br>\n")
-                        .append("        <div class=\"infoLineSub\"></div><br>\n");
+                html.append("                            <tr>\n")
+                        .append("                                <td>\n")
+                        .append("                                    <p class=\"career\"><span class=\"roundBoxinText\">")
+                        .append(careerInfo.getPlace()).append("</span> <span class=\"roundBoxinText\">")
+                        .append(careerInfo.getPeriod()).append("</span>동안 <span class=\"roundBoxinText\">")
+                        .append(careerInfo.getTask()).append("</span> 업무를 맡았어요.</p>\n")
+                        .append("                                </td>\n")
+                        .append("                            </tr>\n")
+                        .append("                            <tr><td style=\"padding-top:5px; padding-bottom:5px;\" colspan=\"2\"><div class=\"infoLineSub\"></div></td></tr>\n");
             }
 
-            html.append("    </div>\n");
+            html.append("                        </table>\n")
+                    .append("                    </td>\n")
+                    .append("                </tr>\n")
+                    .append("            </table>\n")
+                    .append("        </div>\n");
         }
 
-        // 훈련/교육
+        // 훈련/교육 사항 추가
         List<TrainingInfo> trainingInfos = (List<TrainingInfo>) resumeData.get("TrainingInfos");
         if (trainingInfos != null && !trainingInfos.isEmpty()) {
-            html.append("    <div class=\"infoBox\">\n")
-                    .append("        <div class=\"infoTitleContainer\"><span class=\"infoTitle\">훈련/교육</span><div class=\"infoLine\"></div></div><br>\n")
-                    .append("        <table class=\"infoTable\">\n");
+            html.append("        <div class=\"infoBox\">\n")
+                    .append("            <table class=\"infoTable\">\n")
+                    .append("                <tr>\n")
+                    .append("                    <td class=\"leftInfoSide\">훈련/교육</td>\n")
+                    .append("                    <td class=\"rightInfoSide\">\n")
+                    .append("                        <table class=\"infoTable\">\n");
 
             for (TrainingInfo trainingInfo : trainingInfos) {
-                html.append("            <tr>\n")
-                        .append("                <td class=\"infoLeft\"><div class=\"roundBox\"><p class=\"infoText\">훈련/교육명</p></div></td>\n")
-                        .append("                <td class=\"infoRight\"><p class=\"infoText\">").append(trainingInfo.getTrainingName()).append("</p></td>\n")
-                        .append("            </tr>\n")
-                        .append("            <tr>\n")
-                        .append("                <td class=\"infoLeft\"><div class=\"roundBox\"><p class=\"infoText\">훈련기간</p></div></td>\n")
-                        .append("                <td class=\"infoRight\"><p class=\"infoText\">").append(trainingInfo.getDate()).append("</p></td>\n")
-                        .append("            </tr>\n")
-                        .append("            <tr>\n")
-                        .append("                <td class=\"infoLeft\"><div class=\"roundBox\"><p class=\"infoText\">시행기관</p></div></td>\n")
-                        .append("                <td class=\"infoRight\"><p class=\"infoText\">").append(trainingInfo.getAgency()).append("</p></td>\n")
-                        .append("            </tr>\n")
-                        .append("            <tr><td colspan=\"2\"><div class=\"infoLineSub\"></div><br></td></tr>\n");
+                appendDetailedInfo(html, "훈련/교육명", trainingInfo.getTrainingName());
+                appendDetailedInfo(html, "훈련기간", trainingInfo.getDate());
+                appendDetailedInfo(html, "시행기관", trainingInfo.getAgency());
+                html.append("                            <tr><td style=\"padding-top:5px; padding-bottom:5px;\" colspan=\"2\"><div class=\"infoLineSub\"></div></td></tr>\n");
             }
 
-            html.append("        </table>\n")
-                    .append("    </div>\n");
+            html.append("                        </table>\n")
+                    .append("                    </td>\n")
+                    .append("                </tr>\n")
+                    .append("            </table>\n")
+                    .append("        </div>\n");
         }
 
         // 자기소개 내용
         if (introductionInfo != null) {
-            html.append("    <div class=\"infoBox\">\n")
-                    .append("        <div class=\"infoTitleContainer\"><span class=\"infoTitle\">자기소개</span><div class=\"infoLine\"></div></div><br>\n")
-                    .append("        <p class=\"paragraph\">").append(introductionInfo.getGpt()).append("</p>\n")
-                    .append("    </div>\n");
+            html.append("        <div class=\"infoBox\">\n")
+                    .append("            <table class=\"infoTable\">\n")
+                    .append("                <tr>\n")
+                    .append("                    <td class=\"leftInfoSide\">자기소개</td>\n")
+                    .append("                    <td class=\"rightInfoSide\">\n")
+                    .append("                        <p class=\"paragraph\">").append(introductionInfo.getGpt()).append("</p>\n")
+                    .append("                    </td>\n")
+                    .append("                </tr>\n")
+                    .append("            </table>\n")
+                    .append("        </div>\n");
         }
 
-        // 마무리
-        html.append("    <div class=\"infoBox\"><div class=\"infoLine\"></div></div>\n")
-                .append("    <div class=\"infoBox\" style=\"text-align:center;\">\n")
-                .append("        <p class=\"sloganEnd\">1,2,3처럼 쉬운 이력서 생성 도우미,</p>&nbsp;<p class=\"logoEnd\">12쉽소</p>\n")
-                .append("    </div>\n")
+        html.append("    </section>\n")
                 .append("</body>\n")
+                .append("<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js\"></script>\n")
+                .append("<script src=\"https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.3.2/html2canvas.min.js\"></script>\n")
+                .append("<script>\n")
+                .append("    function downloadPDF() {\n")
+                .append("        const pages = document.querySelectorAll('.page');\n")
+                .append("        const doc = new jspdf.jsPDF('p', 'mm', 'a4');\n")
+                .append("        let promises = [];\n")
+                .append("        pages.forEach((page, index) => {\n")
+                .append("            promises.push(\n")
+                .append("                html2canvas(page, {\n")
+                .append("                    scale: 3,\n")
+                .append("                    useCORS: true\n")
+                .append("                }).then((canvas) => {\n")
+                .append("                    const imgData = canvas.toDataURL('SampleImage.jpeg');\n")
+                .append("                    const imgWidth = 210;\n")
+                .append("                    const pageHeight = 297;\n")
+                .append("                    const imgHeight = canvas.height * imgWidth / canvas.width;\n")
+                .append("                    if (index > 0) {\n")
+                .append("                        doc.addPage();\n")
+                .append("                    }\n")
+                .append("                    doc.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);\n")
+                .append("                })\n")
+                .append("            );\n")
+                .append("        });\n")
+                .append("        Promise.all(promises).then(() => {\n")
+                .append("            doc.save('sample.pdf');\n")
+                .append("        });\n")
+                .append("    }\n")
+                .append("</script>\n")
                 .append("</html>");
 
         return html.toString();
     }
 
-    private void appendInfoRow(StringBuilder html, String title, String content) {
+    private void appendDetailedInfo(StringBuilder html, String title, String content) {
         if (content != null && !content.isEmpty()) {
-            html.append("            <tr>\n")
-                    .append("                <td class=\"infoLeft\"><div class=\"roundBox\"><p class=\"infoText\">")
-                    .append(title)
-                    .append("</p></div></td>\n")
-                    .append("                <td class=\"infoRight\"><p class=\"infoText\">")
-                    .append(content)
-                    .append("</p></td>\n")
-                    .append("            </tr>\n");
+            html.append("                            <tr>\n")
+                    .append("                                <td class=\"rightLeftInfo\">\n")
+                    .append("                                    <div class=\"roundBox\">").append(title).append("</div>\n")
+                    .append("                                </td>\n")
+                    .append("                                <td class=\"rightRightInfo\">").append(content).append("</td>\n")
+                    .append("                            </tr>\n");
         }
     }
 
-    private void appendInfoRowCenter(StringBuilder html, String content) {
+    private void appendPersonality(StringBuilder html, String content) {
         if (content != null && !content.isEmpty()) {
-            html.append("            <tr class=\"infoCenter\">\n")
-                    .append("                <td><div class=\"roundBox\"><p class=\"infoText\">")
-                    .append(content)
-                    .append("</p></div></td>\n")
-                    .append("            </tr>\n");
+            html.append("                    <div class=\"roundBoxinRow\" style=\"margin-bottom : 8px;\"><p class=\"infoText\">").append(content).append("</p></div>\n");
         }
     }
 }
