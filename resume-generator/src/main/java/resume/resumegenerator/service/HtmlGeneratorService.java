@@ -129,7 +129,6 @@ public class HtmlGeneratorService {
                 .append("        <div id=\"topBackground2p\"><p id=\"logo\">12쉽소</p></div>\n")
                 .append("        <br><br><br><br>\n");
 
-
         // 경력사항
         List<CareerInfo> careerInfos = (List<CareerInfo>) resumeData.get("CareerInfos");
         if (careerInfos != null && !careerInfos.isEmpty()) {
@@ -182,7 +181,6 @@ public class HtmlGeneratorService {
                     .append("            </table>\n")
                     .append("        </div>\n");
         }
-
         // 자기소개 내용
         if (introductionInfo != null) {
             html.append("        <div class=\"infoBox\">\n")
@@ -194,7 +192,10 @@ public class HtmlGeneratorService {
                     .append("                    </td>\n")
                     .append("                </tr>\n")
                     .append("            </table>\n")
-                    .append("        </div>\n");
+                    .append("        </div>\n")
+                    .append("        <p id=\"signature\">\b 상기 내용이 <span id=\"eb\">사실임을 확인</span>합니다.&nbsp &nbsp &nbsp ")
+                    .append(personalInfo.getName())
+                    .append(" &nbsp &nbsp (서명) </p>\n");
         }
 
         html.append("    </section>\n")
@@ -209,7 +210,7 @@ public class HtmlGeneratorService {
                 .append("        pages.forEach((page, index) => {\n")
                 .append("            promises.push(\n")
                 .append("                html2canvas(page, {\n")
-                .append("                    scale: 3,\n")
+                .append("                    scale: 1,\n")
                 .append("                    useCORS: true\n")
                 .append("                }).then((canvas) => {\n")
                 .append("                    const imgData = canvas.toDataURL('SampleImage.jpeg');\n")

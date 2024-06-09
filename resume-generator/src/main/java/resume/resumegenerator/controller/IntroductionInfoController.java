@@ -4,15 +4,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import resume.resumegenerator.domain.entity.CareerInfo;
 import resume.resumegenerator.domain.entity.IntroductionInfo;
 import resume.resumegenerator.domain.entity.PersonalInfo;
 import resume.resumegenerator.gpt.dto.CompletionDto;
 import resume.resumegenerator.gpt.service.ChatGptService;
+import resume.resumegenerator.store.CareerInfoStore;
 import resume.resumegenerator.store.IntroductionInfoStore;
 import resume.resumegenerator.store.PersonalInfoStore;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/introduction-info")
@@ -21,12 +24,15 @@ public class IntroductionInfoController {
     private final IntroductionInfoStore introductionInfoStore;
     private final ChatGptService chatGptService;
     private final PersonalInfoStore personalInfoStore;
+    private final CareerInfoStore careerInfoStore;
 
     @Autowired
-    public IntroductionInfoController(IntroductionInfoStore introductionInfoStore, ChatGptService chatGptService, PersonalInfoStore personalInfoStore) {
+    public IntroductionInfoController(IntroductionInfoStore introductionInfoStore, ChatGptService chatGptService,
+                                      PersonalInfoStore personalInfoStore, CareerInfoStore careerInfoStore) {
         this.introductionInfoStore = introductionInfoStore;
         this.chatGptService = chatGptService;
         this.personalInfoStore = personalInfoStore;
+        this.careerInfoStore = careerInfoStore;
     }
 
     @PostMapping("/save/{userId}")
@@ -50,17 +56,29 @@ public class IntroductionInfoController {
 
         String birth = personalInfo.getBirth();
 
-        //생년월일을 포함한 프롬프트 구성
+        // 사용자 경력 정보 가져오기
+        List<CareerInfo> careerInfos = careerInfoStore.findById(userId);
+        String careerDetails = careerInfos.stream()
+                .map(career -> String.format("근무처: %s, 근무 기간: %s, 업무 내용: %s", career.getPlace(), career.getPeriod(), career.getTask()))
+                .collect(Collectors.joining("\n"));
+
+// 생년월일과 경력을 포함한 프롬프트 구성
         StringBuilder fullPrompt = new StringBuilder();
-        fullPrompt.append("당신은 해당 생년월일의 구직자입니다. 아래의 제약조건을 지켜서 출력형식에 따라 300자 이내의 이력서 자기소개서를 한글로 작성해주세요.\n")
-                .append("#제약 조건 : \n- 선택한 항목의 핵심 표현을 사용해야 한다.\n- 문장은 공식적이고 명확하게 작성한다\n- 이름, 생년월일을 자기소개서에 작성하면 안된다.\n")
-                .append("#출력 형식 : 저는 항상 책임감을 가지고 살아온 사람입니다. 오랜 시간 동안 다양한 직무를 맡아 왔으며, 맡은 바 책임을 다해 완수해 왔습니다. 또한, 친화력이 뛰어나 여러 세대와 원활하게 소통하며, 다양한 사람들과의 협업을 통해 좋은 결과를 만들어냈습니다.\n")
-                .append("#선택한 항목: ").append(prompt).append("\n")
-                .append("사용자의 생년월일: ").append(birth);
+        fullPrompt.append("당신은 아래의 3가지 특성을 가진 구직자입니다. 아래의 제약조건을 지켜서 이력서에 사용할 자기소개서를 한글로 작성해주세요.\n")
+                .append("#제약 조건 : \n")
+                .append("- 공백 포함 300자 이내여야 한다.\n")
+                .append("- 문장은 공식적이고 명확하게 작성한다.\n")
+                .append("- 해당 생년월일을 가진 구직자라는 걸 명심하고, 이름과 생년월일을 자기소개서에 작성하면 안된다.\n")
+                .append("- 해당 특성이 어떻게 업무에 기여했는지, 어떤 상황에서 발휘되었는지 설명해야 한다.\n")
+                .append("- 너무 억지스러우면 안되고, 경력이 없다면 특성을 잘 보여주도록 작성해야 한다.\n")
+                .append("- 특정 회사나 직무를 언급하지 않고 일반적인 구직 상황을 가정하여 작성해야 한다.\n")
+                .append("#3가지 특성: ").append(prompt).append("\n")
+                .append("사용자의 생년월일: ").append(birth).append("\n")
+                .append("경력:\n").append(careerDetails).append("\n\n");
 
         // GPT 프롬프트 생성
         CompletionDto completionDto = CompletionDto.builder()
-                .model("gpt-4o")
+                .model("gpt-4")
                 .messages(List.of(Map.of("role", "user", "content", fullPrompt.toString())))
                 .temperature(0.7f)
                 .max_tokens(1000)
@@ -93,7 +111,6 @@ public class IntroductionInfoController {
         }
     }
 
-
     @PostMapping("/update/{userId}")
     public ResponseEntity<IntroductionInfo> updateIntroductionInfo(@PathVariable Long userId, @RequestBody IntroductionInfo introductionInfo) {
         if (!introductionInfoStore.existsById(userId)) {
@@ -114,5 +131,3 @@ public class IntroductionInfoController {
         return ResponseEntity.ok(introductionInfo);
     }
 }
-
-
