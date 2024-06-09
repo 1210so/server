@@ -10,16 +10,26 @@ import java.util.Map;
 public class WebViewGeneratorService {
 
     public String generateWebView(Map<String, Object> resumeData) {
+        String name = getStringValue(((PersonalInfo) resumeData.get("PersonalInfo")).getName());
+
         StringBuilder html = new StringBuilder();
         html.append("<!DOCTYPE html>\n")
                 .append("<html lang=\"ko\">\n")
                 .append("<head>\n")
                 .append("    <meta charset=\"UTF-8\">\n")
                 .append("    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n")
-                .append("    <title>12쉽소 이력서 출력</title>\n")
+                .append("    <title>")
+                .append(name)
+                .append("님의 이력서 - 12쉽소</title>\n")
                 .append("    <style>\n")
                 .append("        @import url(12style.css);\n")
                 .append("    </style>\n")
+                .append("    <meta property=\"og:title\" content=\"")
+                .append(name)
+                .append("님의 이력서 바로가기!\">\n")
+                .append("    <meta property=\"og:type\" content=\"website\">\n")
+                .append("    <meta property=\"og:image\" content=\"header.png\">\n")
+                .append("    <meta property=\"og:description\" content=\"1, 2, 3처럼 쉬운 이력서 만들기, 12쉽소로 생성된 이력서입니다.\">\n")
                 .append("</head>\n")
                 .append("<body>\n")
                 .append("    <div class=\"top\"> \n")
@@ -29,11 +39,11 @@ public class WebViewGeneratorService {
                 .append("                <td class=\"leftColumn\"> \n")
                 .append("                    <p class=\"topHighlightText\" style=\"font-size:20px\">언제나 웃는 얼굴로!</p> \n")
                 .append("                    <p class=\"topHighlightText\" style=\"font-size:72px\">")
-                .append(getStringValue(((PersonalInfo) resumeData.get("PersonalInfo")).getName()))
+                .append(name)
                 .append("</p> \n")
                 .append("                </td>\n")
                 .append("                <td class=\"rightColumn\"> \n")
-                .append("                    <img src=\"SampleImage.jpeg\" style=\"width:120px; height:160px\">\n")
+                .append("                    <img src=\"b.png\" style=\"width:120px; height:160px\">\n")
                 .append("                </td>\n")
                 .append("            </tr>\n")
                 .append("        </table>\n")
@@ -86,7 +96,7 @@ public class WebViewGeneratorService {
                 .append("    </div>\n")
                 .append("    <br>\n");
 
-// 최종학력사항
+        // 최종학력사항
         AcademicInfo academicInfo = (AcademicInfo) resumeData.get("AcademicInfo");
         if (academicInfo != null) {
             boolean hasSchoolName = academicInfo.getSchoolName() != null && !academicInfo.getSchoolName().isEmpty();
