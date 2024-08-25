@@ -30,6 +30,7 @@ public class ResumeController {
     private final GitHubService gitHubService;
     private final ChatGptService chatGptService;
 
+    //의존성 주입을 위해 생성자를 통해 필드 초기화
     @Autowired
     public ResumeController(PersonalInfoStore personalInfoStore, AcademicInfoStore academicInfoStore,
                             CareerInfoStore careerInfoStore, LicenseInfoStore licenseInfoStore,
@@ -47,7 +48,7 @@ public class ResumeController {
         this.gitHubService = gitHubService;
         this.chatGptService = chatGptService;
     }
-
+    //사용자 id에 해당하는 이력서를 반환하는 메서드
     @GetMapping("/{userId}")
     public ResponseEntity<Map<String, Object>> getCompleteResume(@PathVariable Long userId) {
         Map<String, Object> resume = new HashMap<>();
@@ -82,7 +83,7 @@ public class ResumeController {
 
         return ResponseEntity.ok(resume);
     }
-
+    //사용자의 이력서를 웹뷰용 HTML 파일로 생성하여 GITHUB에 업로드하는 메서드
     @PostMapping("/{userId}/uploadView")
     public ResponseEntity<String> uploadResumeEmptyToGitHub(@PathVariable Long userId) {
         try {
@@ -129,7 +130,7 @@ public class ResumeController {
             return ResponseEntity.status(500).body("File upload failed: " + e.getMessage());
         }
     }
-
+    //사용자의 이력서를 PDF 형식으로 GITHUB 에 업로드하는 메서드
     @PostMapping("/{userId}/uploadPdf")
     public ResponseEntity<String> uploadResumeToGitHub(@PathVariable Long userId) {
         try {
